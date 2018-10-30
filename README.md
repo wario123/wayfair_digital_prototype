@@ -1,1 +1,1 @@
-# wayfair_digital_prototype
+# Wayfair Digital Prototype
