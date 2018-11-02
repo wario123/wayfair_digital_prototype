@@ -23,8 +23,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         
         //Just a test database call
-        let productFinderDatabase = Database.database().reference()
-        productFinderDatabase.setValue("Checking in!")
+        /*let productFinderDatabase = Database.database().reference()
+        productFinderDatabase.setValue("Checking in!")*/
         
         return true
     }
