@@ -20,6 +20,9 @@ target 'ProductFinder' do
 pod 'Firebase'
 pod 'Firebase/Auth'
 pod 'Firebase/Database'
+pod 'Firebase/Storage'
+pod 'GoogleMaps'
+pod 'GooglePlaces'
 pod 'SVProgressHUD'
 pod 'ChameleonFramework'
 

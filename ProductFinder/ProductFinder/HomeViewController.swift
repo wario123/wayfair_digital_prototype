@@ -9,6 +9,7 @@
 import UIKit
 
 class HomeViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout{
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.backgroundColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
@@ -93,10 +94,10 @@ class HomeViewController: UICollectionViewController, UICollectionViewDelegateFl
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         //self.tabBarController?.selectedIndex = 1
-        self.tabBarController?.selectedIndex = 1
-        
+        let currentShopVC = ShopViewController()
+        currentShopVC.searchBar.text = productCategories[indexPath.row]
+        self.navigationController?.pushViewController(currentShopVC, animated: false)
     }
-
 }
 
 class DealCell: UICollectionViewCell{

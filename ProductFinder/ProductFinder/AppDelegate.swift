@@ -8,6 +8,8 @@
 
 import UIKit
 import Firebase
+import GoogleMaps
+import GooglePlaces
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,11 +23,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //window?.makeKeyAndVisible()
         //window?.rootViewController = CustomTabBarController()
         FirebaseApp.configure()
-        
         //Just a test database call
         /*let productFinderDatabase = Database.database().reference()
         productFinderDatabase.setValue("Checking in!")*/
-        
+        GMSServices.provideAPIKey("AIzaSyAe9cvfxMKNWJfE6SlO79gtgloymZ0QbrY")
+        GMSPlacesClient.provideAPIKey("AIzaSyAe9cvfxMKNWJfE6SlO79gtgloymZ0QbrY")
         return true
     }
 
