@@ -34,25 +34,25 @@ class LoginViewController: UIViewController{
         let textFieldXPos = CGFloat(loginForm.frame.width/10.0)
         let loginViewMidpoint = loginForm.frame.height/2.0
         
-        let labelHeight = CGFloat(15.0)
+        let labelHeight = loginForm.frame.height/5.0
         
-        let usernameLabel = UILabel(frame: CGRect(x: textFieldXPos, y: loginViewMidpoint-120.0, width: textFieldWidth, height: labelHeight))
+        let usernameLabel = UILabel(frame: CGRect(x: textFieldXPos, y: loginViewMidpoint/5.0, width: textFieldWidth, height: labelHeight))
         usernameLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         usernameLabel.text = "Username"
         
-        let usernameField = UITextField(frame: CGRect(x: textFieldXPos, y: loginViewMidpoint-100.0, width: textFieldWidth
+        let usernameField = UITextField(frame: CGRect(x: textFieldXPos, y: (2.5*loginViewMidpoint)/5.0, width: textFieldWidth
             , height: textFieldHeight))
         //usernameField.placeholder = "Username"
         usernameField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         
-        let passwordLabel = UILabel(frame: CGRect(x: textFieldXPos, y: loginViewMidpoint, width: textFieldWidth, height: labelHeight))
+        let passwordLabel = UILabel(frame: CGRect(x: textFieldXPos, y: (4*loginViewMidpoint)/5.0, width: textFieldWidth, height: labelHeight))
         passwordLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         passwordLabel.text = "Password"
         
-        let passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: loginViewMidpoint+20.0, width: textFieldWidth, height: textFieldHeight))
+        let passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: (5.5*loginViewMidpoint)/5.0, width: textFieldWidth, height: textFieldHeight))
         passwordField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         
-        let loginButton = UIButton(frame: CGRect(x: 2.0*loginForm.frame.width/5.0, y: loginViewMidpoint+120.0, width: loginForm.frame.width/5.0, height: 40.0))
+        let loginButton = UIButton(frame: CGRect(x: 2.0*loginForm.frame.width/5.0, y: (8*loginViewMidpoint)/5.0, width: loginForm.frame.width/5.0, height: loginForm.frame.height/10.0))
         loginButton.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         loginButton.layer.cornerRadius = loginButton.frame.height/3
         loginButton.setTitle("Login", for: UIControl.State.normal)

@@ -67,7 +67,7 @@ class HomeViewController: UICollectionViewController, UICollectionViewDelegateFl
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: dealCellId, for: indexPath) as! DealCell
             cell.dealView.frame = cell.frame
             cell.dealView.backgroundColor = UIColor.black
-            cell.dealView.contentMode = .scaleAspectFill
+            cell.dealView.contentMode = .scaleToFill
             cell.dealView.clipsToBounds = true
             cell.dealView.image = UIImage(named: "deal")
             return cell
@@ -84,12 +84,12 @@ class HomeViewController: UICollectionViewController, UICollectionViewDelegateFl
         if indexPath.section == 0{
             return CGSize(width: CGFloat(view.frame.width), height: CGFloat(view.frame.height/2.0))
         }else{
-            return CGSize(width: CGFloat((view.frame.width)/2.0-6.0), height: CGFloat(view.frame.height/10.0))
+            return CGSize(width: CGFloat((view.frame.width)/2.0-15.0), height: CGFloat(view.frame.height/10.0))
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        return UIEdgeInsets(top: 5.0, left: 5.0, bottom: 5.0, right: 5.0)
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

@@ -20,6 +20,11 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         setupNavigationBar()
         if self.currentProductImages.count > 4{
             self.currentProductImages.removeAll()
@@ -29,10 +34,6 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
                 self.collectionView.reloadData()
             }
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
     }
     
     lazy var searchBar = UISearchBar(frame: CGRect.zero)
