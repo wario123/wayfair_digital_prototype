@@ -20,8 +20,8 @@ class HomeViewController: UICollectionViewController, UICollectionViewDelegateFl
     let productCategoryCellId = "productCategoryCell"
     let dealCellId = "dealCell"
     
-    let productCategoryImages = [UIImage(named: "furniture"), UIImage(named: "bed_bath"), UIImage(named: "decor_pillows"), UIImage(named: "rugs"), UIImage(named: "lighting"), UIImage(named: "home_improvement"), UIImage(named: "appliances"), UIImage(named: "kitchen_tabletop")]
-    let productCategories = ["Furniture", "Bed & Bath", "Decor & Pillows", "Rugs", "Lighting", "Home Improvement", "Appliances", "Kitchen & Tabletop"]
+    let productCategoryImages = [UIImage(named: "furniture"), UIImage(named: "kitchen_tabletop")]
+    let productCategories = ["Furniture", "Kitchen & Tabletop"]
     
     func setupNavigationBar(){
         searchBar.placeholder = "Search"
@@ -58,7 +58,7 @@ class HomeViewController: UICollectionViewController, UICollectionViewDelegateFl
         if section == 0{
             return 1
         }else{
-            return 16
+            return 2
         }
     }
     
@@ -84,7 +84,7 @@ class HomeViewController: UICollectionViewController, UICollectionViewDelegateFl
         if indexPath.section == 0{
             return CGSize(width: CGFloat(view.frame.width), height: CGFloat(view.frame.height/2.0))
         }else{
-            return CGSize(width: CGFloat((view.frame.width)/2.0-15.0), height: CGFloat(view.frame.height/10.0))
+            return CGSize(width: CGFloat(view.frame.width-15.0), height: CGFloat(view.frame.height/3.0))
         }
     }
     

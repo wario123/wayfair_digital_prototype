@@ -19,6 +19,7 @@
 		344D811A218DF80B008E3E91 /* ProductInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D8119218DF80B008E3E91 /* ProductInfoViewController.swift */; };
 		34B93811218E5F870095CFE4 /* Business.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34B93810218E5F870095CFE4 /* Business.swift */; };
 		34B93813218E88920095CFE4 /* BusinessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34B93812218E88920095CFE4 /* BusinessViewController.swift */; };
+		34D7CAC9219549E900972F1E /* CartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D7CAC8219549E900972F1E /* CartViewController.swift */; };
 		990CCA0AB7930EA8BF1D03EB /* Pods_ProductFinder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AADFB86CE7B4468A2DB2C7B0 /* Pods_ProductFinder.framework */; };
 		AF926230FB66EDD555DE764C /* Pods_ProductFinderUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C67D506A707D09DB2C3CB01 /* Pods_ProductFinderUITests.framework */; };
 		C28747F1B0F8DB597B60A26E /* Pods_ProductFinderTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 829F230F2909CCD4E2ABD1D2 /* Pods_ProductFinderTests.framework */; };
@@ -62,6 +63,7 @@
 		344D8119218DF80B008E3E91 /* ProductInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfoViewController.swift; sourceTree = "<group>"; };
 		34B93810218E5F870095CFE4 /* Business.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Business.swift; sourceTree = "<group>"; };
 		34B93812218E88920095CFE4 /* BusinessViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessViewController.swift; sourceTree = "<group>"; };
+		34D7CAC8219549E900972F1E /* CartViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartViewController.swift; sourceTree = "<group>"; };
 		38DFC7748F1748E433518020 /* Pods-ProductFinder.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProductFinder.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ProductFinder/Pods-ProductFinder.debug.xcconfig"; sourceTree = "<group>"; };
 		53F528DE94E879A2F94BCDC3 /* Pods-ProductFinderUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProductFinderUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ProductFinderUITests/Pods-ProductFinderUITests.release.xcconfig"; sourceTree = "<group>"; };
 		7C67D506A707D09DB2C3CB01 /* Pods_ProductFinderUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProductFinderUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -182,6 +184,7 @@
 				34B93812218E88920095CFE4 /* BusinessViewController.swift */,
 				34B93810218E5F870095CFE4 /* Business.swift */,
 				344D8119218DF80B008E3E91 /* ProductInfoViewController.swift */,
+				34D7CAC8219549E900972F1E /* CartViewController.swift */,
 				E25DAD5921890449005FAFF4 /* Main.storyboard */,
 				E25DAD5C2189044A005FAFF4 /* Assets.xcassets */,
 				E25DAD5E2189044A005FAFF4 /* LaunchScreen.storyboard */,
@@ -370,6 +373,8 @@
 				"${BUILT_PRODUCTS_DIR}/ChameleonFramework/ChameleonFramework.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
+				"${BUILT_PRODUCTS_DIR}/ReactiveSwift/ReactiveSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/Result/Result.framework",
 				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
@@ -379,6 +384,8 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ChameleonFramework.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactiveSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Result.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
@@ -453,6 +460,7 @@
 			files = (
 				34425395218A6E80005BB5E6 /* HomeViewController.swift in Sources */,
 				344253A1218B3EE7005BB5E6 /* Extensions.swift in Sources */,
+				34D7CAC9219549E900972F1E /* CartViewController.swift in Sources */,
 				E25DAD5821890449005FAFF4 /* ViewController.swift in Sources */,
 				3442539121893B42005BB5E6 /* LoginViewController.swift in Sources */,
 				34425393218A6496005BB5E6 /* SignupViewController.swift in Sources */,

@@ -17,6 +17,8 @@ import FirebaseStorage
 class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate, UITableViewDataSource, UITableViewDelegate{
     
     var locationManager = CLLocationManager()
+    var latitude = 0.0
+    var longitude = 0.0
     
     override func viewDidLoad(){
         super.viewDidLoad()
@@ -49,6 +51,13 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
     
     lazy var searchBar = UISearchBar(frame: CGRect.zero)
     
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        self.latitude = Double(locations[0].coordinate.latitude)
+        self.longitude = Double(locations[0].coordinate.longitude)
+        
+        print("\(self.latitude), \(self.longitude)")
+    }
+    
     func setupNavigationBar(){
         searchBar.placeholder = "Search"
         for subView in searchBar.subviews {
@@ -61,7 +70,9 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
                 }
             }
         }
-        navigationItem.titleView = searchBar
+        let titleLabel = UILabel()
+        titleLabel.text = "Location View"
+        navigationItem.titleView = titleLabel
     }
     
     func loadRelevantBusinesses(completion: @escaping ()->()) -> [Business]{
@@ -80,6 +91,9 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
         mapView.delegate = self
         mapView.settings.myLocationButton = true
         mapView.isMyLocationEnabled = true
+        //self.latitude = Double((mapView.myLocation?.coordinate.latitude)) ?? 0.0
+        //self.longitude = Double((mapView.myLocation?.coordinate.longitude)) ?? 0.0
+        print("\(self.latitude), \(self.longitude)")
         
         ref.child("furniture").observeSingleEvent(of: .value, with: { (snapshot) in
             // Get user value
@@ -167,6 +181,7 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let businessVC = BusinessViewController()
         businessVC.currentBusiness = self.currentBusinesses[indexPath.row]
+        businessVC.currentDistance = abs(self.latitude-self.currentBusinesses[indexPath.row].getLatitude()) + abs(self.longitude-self.currentBusinesses[indexPath.row].getLongitude())
         self.navigationController?.pushViewController(businessVC, animated: false)
     }
     

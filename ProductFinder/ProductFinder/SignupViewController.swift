@@ -106,7 +106,14 @@ class SignupViewController: UIViewController, UITextFieldDelegate {
                 let viewController = storyboard.instantiateViewController(withIdentifier: "TabBar")
                 self.present(viewController, animated: true, completion: nil)
                 UserDefaults.standard.set(true, forKey: "IsUserLoggedIn")
+                UserDefaults.standard.set([], forKey: "cart")
+                UserDefaults.standard.set(self.usernameField.text!, forKey: "username")
                 UserDefaults.standard.synchronize()
+                //let databaseRef = Database.database().reference()
+                //let currentUID = Auth.auth().currentUser?.uid
+                
+                //databaseRef.child("users").child((user?.user.uid)!).child("Username").setValue(self.usernameField.text!)
+                //databaseRef.child("users").child((user?.user.uid)!).child("cart").setValue([])
             }
         }
     }

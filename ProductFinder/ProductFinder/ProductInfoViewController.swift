@@ -35,8 +35,15 @@ class ProductInfoViewController: UIViewController{
         let uploadBarButton = UIBarButtonItem(image: UIImage(named: "upload")?.withRenderingMode(.alwaysOriginal), style: .plain, target: self, action: nil)
         
         let shoppingCartBarButton = UIBarButtonItem(image: UIImage(named: "shopping_cart")?.withRenderingMode(.alwaysOriginal), style: .plain, target: self, action: nil)
+        shoppingCartBarButton.action = #selector(goToCart)
         
         navigationItem.rightBarButtonItems = [shoppingCartBarButton, uploadBarButton]
+    }
+    
+    @objc func goToCart(){
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let cartNav = storyboard.instantiateViewController(withIdentifier: "CartNav")
+        self.present(cartNav, animated: true, completion: nil)
     }
     
     func setupProductDetailView(){
@@ -82,7 +89,7 @@ class ProductInfoViewController: UIViewController{
         //self.locatorButton.clipsToBounds = true
         
         let addToCartButton = UIButton(frame: CGRect(x: self.locatorButton.frame.maxX+5.0, y: self.detailImageView.frame.maxY+5.0, width: view.frame.width/2.0-15.0, height: view.frame.height/10.0))
-        //addToCartButton.addTarget(<#T##target: Any?##Any?#>, action: <#T##Selector#>, for: <#T##UIControl.Event#>)
+        addToCartButton.addTarget(self, action: #selector(addToCart), for: .touchUpInside)
         addToCartButton.isEnabled = true
         addToCartButton.isUserInteractionEnabled = true
         addToCartButton.layer.cornerRadius = 10
@@ -125,11 +132,52 @@ class ProductInfoViewController: UIViewController{
         //self.tabBarController?.selectedIndex = 2
     }
     
-    /*@objc func addToCart(sender: UIButton){
+    @objc func addToCart(sender: UIButton){
+        
+        let shapeLayer = CAShapeLayer()
+        let circularPath = UIBezierPath(arcCenter: self.view.center, radius: 100, startAngle: -CGFloat.pi/2, endAngle: 2*CGFloat.pi, clockwise: true)
+        
         let databaseRef = Database.database().reference()
-        let currentUID = Auth.auth().currentUser?.uid
-        databaseRef.child("users/"+currentUID!+"/cart")({
+        //let currentUID = Auth.auth().currentUser?.uid
+        
+        if(UserDefaults.standard.stringArray(forKey: "cart") != nil){
+            //Cart exists
             
-        })
-    }*/
+            var currentCart = (UserDefaults.standard.stringArray(forKey: "cart"))
+            //if(!(currentCart?.contains(currentProduct.getName()))!){
+                currentCart?.append(currentProduct.getName())
+                databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("cart").setValue(currentCart)
+                UserDefaults.standard.set(currentCart, forKey: "cart")
+            //}
+            
+            
+        }else{
+            let cart = [currentProduct.getName()]
+            databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("cart").setValue(cart)
+            UserDefaults.standard.set(cart, forKey: "cart")
+        }
+        /*trackLayer.path = circularPath.cgPath
+         trackLayer.strokeColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 0.9).cgColor
+         trackLayer.lineWidth = 20
+         trackLayer.fillColor = UIColor.clear.cgColor
+         trackLayer.lineCap = CAShapeLayerLineCap.round
+         view.layer.addSublayer(trackLayer)*/
+        
+        print(UserDefaults.standard.stringArray(forKey: "cart") as Any)
+        
+        shapeLayer.path = circularPath.cgPath
+        shapeLayer.strokeColor = UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0).cgColor
+        shapeLayer.lineWidth = 20
+        shapeLayer.strokeEnd = 0
+        shapeLayer.fillColor = UIColor.clear.cgColor
+        view.layer.addSublayer(shapeLayer)
+        
+        let basicAnimation = CABasicAnimation(keyPath: "strokeEnd")
+        basicAnimation.toValue = 1
+        basicAnimation.duration = 2
+        
+        basicAnimation.fillMode = CAMediaTimingFillMode.forwards
+        basicAnimation.isRemovedOnCompletion = true
+        shapeLayer.add(basicAnimation, forKey: "urSoBasic")
+    }
 }

@@ -7,11 +7,16 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseDatabase
 import FirebaseStorage
 import GoogleMaps
 import GooglePlaces
+import MapKit
+import CoreLocation
 
-class BusinessViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout{
+
+class BusinessViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, CLLocationManagerDelegate{
     var currentBusiness = Business()
     var collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: UICollectionViewFlowLayout())
     let businessImageCellId = "businessImageCellId"
@@ -19,8 +24,21 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
     let checkInCellId = "checkInCellId"
     let mapViewCellId = "mapViewCellId"
     
+    let manager = CLLocationManager()
+    var currentDistance = 10000.0
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let latitude = locations[0].coordinate.latitude
+        let longitude = locations[0].coordinate.longitude
+        let distanceMeasure = abs(currentBusiness.getLatitude()-latitude) + abs(currentBusiness.getLongitude()-longitude)
+        currentDistance = distanceMeasure
+        //collectionView.reloadData()
+    }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        manager.delegate = self
         print(currentBusiness.getName())
     }
     
@@ -40,6 +58,8 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
         collectionView.register(CheckInCell.self, forCellWithReuseIdentifier: self.checkInCellId)
         collectionView.register(MapViewCell.self, forCellWithReuseIdentifier: self.mapViewCellId)
         self.view.addSubview(collectionView)
+        
+        
     }
     
     let businessImageView: UIImageView = {
@@ -95,6 +115,65 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
         }else{
             return CGSize(width: CGFloat(view.frame.width), height: CGFloat(view.frame.height/8.0))
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if indexPath.section == 2{
+            if currentDistance < 0.004{
+                print("tapped check In!")
+                let shapeLayer = CAShapeLayer()
+                let circularPath = UIBezierPath(arcCenter: self.view.center, radius: 100, startAngle: -CGFloat.pi/2, endAngle: 2*CGFloat.pi, clockwise: true)
+                
+                /*trackLayer.path = circularPath.cgPath
+                trackLayer.strokeColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 0.9).cgColor
+                trackLayer.lineWidth = 20
+                trackLayer.fillColor = UIColor.clear.cgColor
+                trackLayer.lineCap = CAShapeLayerLineCap.round
+                view.layer.addSublayer(trackLayer)*/
+                let databaseRef = Database.database().reference()
+                //let currentUID = Auth.auth().currentUser?.uid
+                
+                if(UserDefaults.standard.stringArray(forKey: "checkIns") != nil){
+                    //Cart exists
+                    
+                    var currentCheckIns = (UserDefaults.standard.stringArray(forKey: "checkIns"))
+                    if(!(currentCheckIns?.contains(currentBusiness.getName()))!){
+                        currentCheckIns?.append(currentBusiness.getName())
+                        databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("checkIns").setValue(currentCheckIns)
+                        UserDefaults.standard.set(currentCheckIns, forKey: "checkIns")
+                    }
+                    
+                    
+                }else{
+                    let checkIns = [currentBusiness.getName()]
+                    databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("checkIns").setValue(checkIns)
+                    UserDefaults.standard.set(checkIns, forKey: "checkIns")
+                }
+                
+                shapeLayer.path = circularPath.cgPath
+                shapeLayer.strokeColor = UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0).cgColor
+                shapeLayer.lineWidth = 20
+                shapeLayer.strokeEnd = 0
+                shapeLayer.fillColor = UIColor.clear.cgColor
+                view.layer.addSublayer(shapeLayer)
+                
+                let basicAnimation = CABasicAnimation(keyPath: "strokeEnd")
+                basicAnimation.toValue = 1
+                basicAnimation.duration = 2
+                
+                basicAnimation.fillMode = CAMediaTimingFillMode.forwards
+                basicAnimation.isRemovedOnCompletion = true
+                shapeLayer.add(basicAnimation, forKey: "urSoBasic")
+                
+                // trackLayer.removeFromSuperlayer()
+            }
+            
+        }
+    }
+    
+    
+    @objc func disappear(){
+        self.view.isHidden = true
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -196,6 +275,14 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
             return cell
         }else if indexPath.section == 2{
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.checkInCellId, for: indexPath) as! CheckInCell
+            print("current Distance = \(currentDistance)")
+            /*if(currentDistance < 0.004){
+                cell.checkInButton.isEnabled = true
+                cell.checkInButton.isUserInteractionEnabled = true
+            }else{
+                cell.checkInButton.isEnabled = false
+                cell.checkInButton.isUserInteractionEnabled = false
+            }*/
             return cell
         }else{
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.mapViewCellId, for: indexPath) as! MapViewCell
@@ -215,6 +302,12 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
             return UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         }
     }
+    
+   /* @objc func registerCheckIn(sender: UIButton){
+        
+        //view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
+    }*/
+    
 }
 
 class BusinessImageCell: UICollectionViewCell{
@@ -318,6 +411,9 @@ class BusinessInfoCell: UICollectionViewCell{
 class CheckInCell: UICollectionViewCell{
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.contentView.layer.borderColor = UIColor.black.cgColor
+        self.contentView.layer.borderWidth = 2.0
+        self.contentView.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         setUpCell()
     }
     
@@ -326,18 +422,21 @@ class CheckInCell: UICollectionViewCell{
     }
     
     func setUpCell(){
-        self.addSubview(checkInButton)
-        checkInButton.anchor(top:safeAreaLayoutGuide.topAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5.0, paddingLeft: 5.0, paddingBottom: 5.0, paddingRight: 5.0, width: 0, height: 0)
-        checkInButton.setTitle("Check In", for: UIControl.State.normal)
+        self.addSubview(checkInLabel)
+        checkInLabel.anchor(top:safeAreaLayoutGuide.topAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5.0, paddingLeft: 5.0, paddingBottom: 5.0, paddingRight: 5.0, width: 0, height: 0)
+        /*checkInButton.setTitle("Check In", for: UIControl.State.normal)
         checkInButton.layer.cornerRadius = 10
-        checkInButton.clipsToBounds = true
+        checkInButton.clipsToBounds = true*/
+        checkInLabel.textAlignment = .center
+        checkInLabel.text = "Check In"
+        checkInLabel.textColor = UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
     }
     
-    let checkInButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
-        button.setTitleColor(UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0), for: UIControl.State.normal)
-        return button
+    let checkInLabel: UILabel = {
+        let label = UILabel()
+        //button.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
+        //button.setTitleColor(UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0), for: UIControl.State.normal)
+        return label
     }()
 }
 

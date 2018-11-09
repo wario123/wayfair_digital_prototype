@@ -2,22 +2,25 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "Screen Shot 2018-11-03 at 3.37.47 AM.png",
+      "filename" : "home.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "Screen Shot 2018-11-03 at 3.37.47 AM-1.png",
+      "filename" : "home2.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "Screen Shot 2018-11-03 at 3.37.47 AM-2.png",
+      "filename" : "home3.png",
       "scale" : "3x"
     }
   ],
   "info" : {
     "version" : 1,
     "author" : "xcode"
+  },
+  "properties" : {
+    "template-rendering-intent" : "original"
   }
 }

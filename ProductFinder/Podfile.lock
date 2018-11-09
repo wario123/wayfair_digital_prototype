@@ -84,6 +84,9 @@ PODS:
     - nanopb/encode (= 0.3.901)
   - nanopb/decode (0.3.901)
   - nanopb/encode (0.3.901)
+  - ReactiveSwift (4.0.0):
+    - Result (~> 4.0)
+  - Result (4.0.0)
   - SVProgressHUD (2.2.5)
 
 DEPENDENCIES:
@@ -94,6 +97,7 @@ DEPENDENCIES:
   - Firebase/Storage
   - GoogleMaps
   - GooglePlaces
+  - ReactiveSwift
   - SVProgressHUD
 
 SPEC REPOS:
@@ -114,6 +118,8 @@ SPEC REPOS:
     - GTMSessionFetcher
     - leveldb-library
     - nanopb
+    - ReactiveSwift
+    - Result
     - SVProgressHUD
 
 SPEC CHECKSUMS:
@@ -133,8 +139,10 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 0c4baf0a73acd0041bf9f71ea018deedab5ea84e
   leveldb-library: 08cba283675b7ed2d99629a4bc5fd052cd2bb6a5
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
+  ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
+  Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
   SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
 
-PODFILE CHECKSUM: 72132f3fdbbfba87f3781ba9f0dee2147296b738
+PODFILE CHECKSUM: 2486717078af017e576ae0aa601fea58286a4168
 
 COCOAPODS: 1.5.3

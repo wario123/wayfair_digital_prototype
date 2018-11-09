@@ -20,12 +20,12 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavigationBar()
+        print("current user ID = \(String(describing: Auth.auth().currentUser?.uid))")
         if self.currentProductImages.count > 4{
             self.currentProductImages.removeAll()
         }
@@ -54,11 +54,15 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
                 }
             }
         }
+        
+        searchBar.text = "Furniture"
+        searchBar.isUserInteractionEnabled = false
         navigationItem.titleView = searchBar
         
         let cameraBarButton = UIBarButtonItem(image: UIImage(named: "camera")?.withRenderingMode(.alwaysOriginal), style: .plain, target: self, action: nil)
         
         let shoppingCartBarButton = UIBarButtonItem(image: UIImage(named: "shopping_cart")?.withRenderingMode(.alwaysOriginal), style: .plain, target: self, action: nil)
+        shoppingCartBarButton.action = #selector(goToCart)
         
         navigationItem.rightBarButtonItems = [shoppingCartBarButton, cameraBarButton]
         
@@ -70,9 +74,15 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
         self.collectionView = UICollectionView(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: self.view.bounds.height), collectionViewLayout: collectionLayout)
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.backgroundColor = UIColor.white
+        collectionView.backgroundColor = UIColor(displayP3Red: 0.96, green: 0.96, blue: 0.93, alpha: 1.0)
         collectionView.register(ItemCell.self, forCellWithReuseIdentifier: itemCellId)
         self.view.addSubview(collectionView)
+    }
+    
+    @objc func goToCart(){
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let cartNav = storyboard.instantiateViewController(withIdentifier: "CartNav")
+        self.present(cartNav, animated: true, completion: nil)
     }
     
     func loadProducts(completion: @escaping ()->()){
@@ -164,7 +174,7 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
 class ItemCell: UICollectionViewCell{
     override init(frame: CGRect){
         super.init(frame: frame)
-        self.backgroundColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
+        self.backgroundColor = UIColor.white
         
         self.addSubview(itemImageView)
         self.addSubview(nameLabel)
