@@ -7,12 +7,24 @@
 //
 
 import UIKit
+import Firebase
 
-class SignupViewController: UIViewController {
+class SignupViewController: UIViewController, UITextFieldDelegate {
+    var usernameField = UITextField()
+    var passwordField = UITextField()
+    var confirmPasswordField = UITextField()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackground()
         setupLoginForm()
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dimissKeyboard))
+        view.addGestureRecognizer(tap)
+        
+        self.usernameField.delegate = self
+        self.passwordField.delegate = self
+        self.confirmPasswordField.delegate = self
     }
     
     func setupBackground(){
@@ -39,8 +51,9 @@ class SignupViewController: UIViewController {
         usernameLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         usernameLabel.text = "Username"
         
-        let usernameField = UITextField(frame: CGRect(x: textFieldXPos, y: (2.5*signupViewMidpoint)/7.0, width: textFieldWidth
+        usernameField = UITextField(frame: CGRect(x: textFieldXPos, y: (2.5*signupViewMidpoint)/7.0, width: textFieldWidth
             , height: textFieldHeight))
+        usernameField.textColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
         //usernameField.placeholder = "Username"
         usernameField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         
@@ -48,16 +61,18 @@ class SignupViewController: UIViewController {
         passwordLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         passwordLabel.text = "Password"
         
-        let passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: (5.5*signupViewMidpoint)/7.0, width: textFieldWidth, height: textFieldHeight))
+        passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: (5.5*signupViewMidpoint)/7.0, width: textFieldWidth, height: textFieldHeight))
         passwordField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
+        passwordField.textColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
         
         
         let confirmPasswordLabel = UILabel(frame: CGRect(x: textFieldXPos, y: signupViewMidpoint, width: textFieldWidth, height: labelHeight))
         confirmPasswordLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         confirmPasswordLabel.text = "Confirm Password"
         
-        let confirmPasswordField = UITextField(frame: CGRect(x: textFieldXPos, y: (8.5*signupViewMidpoint)/7.0, width: textFieldWidth, height: textFieldHeight))
+        confirmPasswordField = UITextField(frame: CGRect(x: textFieldXPos, y: (8.5*signupViewMidpoint)/7.0, width: textFieldWidth, height: textFieldHeight))
         confirmPasswordField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
+        confirmPasswordField.textColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
         
         let signupButton = UIButton(frame: CGRect(x: 2.0*signupForm.frame.width/5.0, y: (11.5*signupViewMidpoint)/7.0, width: signupForm.frame.width/5.0, height: signupForm.frame.height/10.0))
         signupButton.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
@@ -77,8 +92,31 @@ class SignupViewController: UIViewController {
     }
     
     @objc func signupUser(sender: UIButton){
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let viewController = storyboard.instantiateViewController(withIdentifier: "TabBar")
-        self.present(viewController, animated: true, completion: nil)
+        if(passwordField.text != confirmPasswordField.text){
+            return
+        }
+        Auth.auth().createUser(withEmail: usernameField.text!+"@furnish.com", password: passwordField.text!) { (user, error) in
+            if error != nil{
+                //There was some error
+                print(error!)
+            }else{
+                //Successful - Registration Successful
+                print("Successfully Registered")
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let viewController = storyboard.instantiateViewController(withIdentifier: "TabBar")
+                self.present(viewController, animated: true, completion: nil)
+                UserDefaults.standard.set(true, forKey: "IsUserLoggedIn")
+                UserDefaults.standard.synchronize()
+            }
+        }
+    }
+    
+    @objc func dimissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.view.endEditing(true)
+        return false
     }
 }

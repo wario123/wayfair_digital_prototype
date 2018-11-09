@@ -104,8 +104,12 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
                                 let longitude = (businessInfo as? NSDictionary)!["Longitude"] as! Double
                                 let note = (businessInfo as? NSDictionary)!["Description"] as! String
                                 let id = (businessInfo as? NSDictionary)!["ID"] as! String
+                                let open = (businessInfo as? NSDictionary)!["Open"] as! Double
+                                let close = (businessInfo as? NSDictionary)!["Close"] as! Double
+                                let rating = (businessInfo as? NSDictionary)!["Rating"] as! Double
+                                let price = (businessInfo as? NSDictionary)!["Price"] as! String
                                 
-                                let currentBusiness = Business(name: businessName as! String, address: address, note: note,type: type, latitude: latitude, longitude: longitude, id: id)
+                                let currentBusiness = Business(name: businessName as! String, address: address, note: note,type: type, latitude: latitude, longitude: longitude, id: id, open: open, close: close, rating: rating, price: price)
                                 if(!self.currentBusinesses.contains(currentBusiness)){
                                     self.currentBusinesses.append(currentBusiness)
                                 }
@@ -114,7 +118,7 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
                         
                         
                         print("\(String(describing: self.locationManager.location?.coordinate.latitude)), \(String(describing: self.locationManager.location?.coordinate.longitude))")
-                        mapView.camera = GMSCameraPosition.camera(withLatitude: (self.locationManager.location?.coordinate.latitude)!, longitude: (self.locationManager.location?.coordinate.longitude)!, zoom: 10.0)
+                        mapView.camera = GMSCameraPosition.camera(withLatitude: (self.locationManager.location?.coordinate.latitude) ?? 40.7831, longitude: (self.locationManager.location?.coordinate.longitude) ?? -73.9712, zoom: 10.0)
                         
                         print(self.currentBusinesses.count)
                         
@@ -160,14 +164,21 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
         return self.currentBusinesses.count
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let businessVC = BusinessViewController()
+        businessVC.currentBusiness = self.currentBusinesses[indexPath.row]
+        self.navigationController?.pushViewController(businessVC, animated: false)
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "businessCell") as! BusinessCell
         cell.nameLabel.text = self.currentBusinesses[indexPath.row].getName()
         cell.addressLabel.text = String(self.currentBusinesses[indexPath.row].getAddress().split(separator: ",").first!)
         
-        let storageRef = Storage.storage().reference()
+        //let storageRef = Storage.storage().reference()
         let imageName = self.currentBusinesses[indexPath.row].getName().lowercased().replacingOccurrences(of: " ", with: "") + ".png"
-        let currentImageRef = storageRef.child("images/\(imageName)")
+        cell.businessImageView.image = UIImage(named: imageName)
+        /*let currentImageRef = storageRef.child("images/\(imageName)")
         
         currentImageRef.getData(maxSize: 1024 * 1024 * 1024) { data, error in
             if let error = error {
@@ -179,7 +190,7 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
                 image?.accessibilityIdentifier = imageName
                 cell.businessImageView.image = image
             }
-        }
+        }*/
         
         cell.layer.shadowColor = UIColor.black.cgColor
         cell.layer.shadowOpacity = 0.23
@@ -211,7 +222,7 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
             }
         case 1:
             self.view.subviews.forEach({ $0.removeFromSuperview() })
-            self.view.backgroundColor = UIColor.black
+            self.view.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
             loadBusinessListView()
         default:
             self.view.backgroundColor = UIColor.purple

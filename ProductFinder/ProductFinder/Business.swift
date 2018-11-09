@@ -17,8 +17,26 @@ class Business: NSObject{
     private var longitude: Double
     private var type: String
     private var id: String
+    private var open: Double
+    private var close: Double
+    private var rating: Double
+    private var price: String
     
-    init(name: String, address: String, note: String, type: String, latitude: Double, longitude: Double, id: String){
+    override init(){
+        self.name = ""
+        self.address = ""
+        self.note = ""
+        self.type = ""
+        self.latitude = 0.0
+        self.longitude = 0.0
+        self.id = ""
+        self.open = 0.0
+        self.close = 0.0
+        self.rating = 0.0
+        self.price = ""
+    }
+    
+    init(name: String, address: String, note: String, type: String, latitude: Double, longitude: Double, id: String, open: Double, close: Double, rating: Double, price: String){
         self.name = name
         self.address = address
         self.note = note
@@ -26,6 +44,10 @@ class Business: NSObject{
         self.latitude = latitude
         self.longitude = longitude
         self.id = id
+        self.open = open
+        self.close = close
+        self.rating = rating
+        self.price = price
     }
     
     func getName() -> String{
@@ -82,5 +104,37 @@ class Business: NSObject{
     
     func setID(newId: String){
         self.id = newId
+    }
+    
+    func getOpen() -> Double{
+        return self.open
+    }
+    
+    func setOpen(open: Double){
+        self.open = open
+    }
+    
+    func getClose() -> Double{
+        return self.close
+    }
+    
+    func setClose(close: Double){
+        self.close = close
+    }
+    
+    func getPrice() -> String{
+        return self.price
+    }
+    
+    func setPrice(price: String){
+        self.price = price
+    }
+    
+    func getRating() -> Double{
+        return self.rating
+    }
+    
+    func setRating(rating: Double){
+        self.rating = rating
     }
 }

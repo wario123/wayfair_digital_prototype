@@ -22,6 +22,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //window = UIWindow(frame: UIScreen.main.bounds)
         //window?.makeKeyAndVisible()
         //window?.rootViewController = CustomTabBarController()
+        let userLoginStatus = UserDefaults.standard.bool(forKey: "IsUserLoggedIn")
+        if(userLoginStatus){
+            let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            let protectedPage = mainStoryboard.instantiateViewController(withIdentifier: "TabBar")
+            window!.rootViewController = protectedPage
+            window!.makeKeyAndVisible()
+        }
         FirebaseApp.configure()
         //Just a test database call
         /*let productFinderDatabase = Database.database().reference()

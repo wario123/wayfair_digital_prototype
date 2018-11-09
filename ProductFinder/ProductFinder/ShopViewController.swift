@@ -103,6 +103,8 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
         return currentProducts.count
     }
     
+    //let imageCache = NSCache<AnyObject, UIImage>()
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: itemCellId, for: indexPath) as! ItemCell
         let currentProduct: Product = currentProducts[indexPath.row]
@@ -110,9 +112,20 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
         cell.sellerLabel.text = "by \(currentProduct.getSeller())"
         cell.priceLabel.text = "$\(currentProduct.getPrice())"
         
-        let storageRef = Storage.storage().reference()
+        
+        //let storageRef = Storage.storage().reference()
         let imageName = currentProduct.getName().lowercased().replacingOccurrences(of: " ", with: "") + ".png"
-        let currentImageRef = storageRef.child("images/\(imageName)")
+        cell.itemImageView.image = UIImage(named: imageName)
+        currentProductImages.append(UIImage(named: imageName)!)
+        return cell
+        
+        /*let currentImageRef = storageRef.child("images/\(imageName)")
+        
+        if let imageFromCache = imageCache.object(forKey: imageName as AnyObject){
+            cell.itemImageView.image = imageFromCache
+            self.currentProductImages.append(imageFromCache)
+            return cell
+        }
         
         currentImageRef.getData(maxSize: 1024 * 1024 * 1024) { data, error in
             if let error = error {
@@ -122,6 +135,7 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
                 // Data for "images/island.jpg" is returned
                 let image = UIImage(data: data!)
                 image?.accessibilityIdentifier = imageName
+                self.imageCache.setObject(image!, forKey: imageName as AnyObject)
                 cell.itemImageView.image = image
                 if !self.currentProductImages.contains(image!){
                     self.currentProductImages.append(image!)
@@ -129,7 +143,7 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        return cell
+        return cell*/
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -139,14 +153,8 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let productInfoVC = ProductInfoViewController()
         productInfoVC.detailLabel.text = currentProducts[indexPath.row].getName()
-        var productImage: UIImage = UIImage()
-        for currentProductImage in self.currentProductImages{
-            if currentProductImage.accessibilityIdentifier == currentProducts[indexPath.row].getName().lowercased().replacingOccurrences(of: " ", with: "")+".png"{
-                productImage = currentProductImage
-                break
-            }
-        }
-        productInfoVC.detailImageView.image = productImage
+        let imageName = currentProducts[indexPath.row].getName().lowercased().replacingOccurrences(of: " ", with: "") + ".png"
+        productInfoVC.detailImageView.image = UIImage(named: imageName)
         productInfoVC.currentProduct = currentProducts[indexPath.row]
         self.navigationController?.pushViewController(productInfoVC, animated: false)
     }
@@ -176,7 +184,7 @@ class ItemCell: UICollectionViewCell{
         fatalError("init(coder:) has not been implemented yet!")
     }
     
-    let itemImageView: UIImageView = {
+    var itemImageView: UIImageView = {
         let imageView = UIImageView()
         return imageView
     }()
@@ -202,4 +210,5 @@ class ItemCell: UICollectionViewCell{
         label.textColor = UIColor.red
         return label
     }()
+    
 }

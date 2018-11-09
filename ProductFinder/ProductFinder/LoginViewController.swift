@@ -7,13 +7,21 @@
 //
 
 import UIKit
+import Firebase
 
-class LoginViewController: UIViewController{
-    
+class LoginViewController: UIViewController, UITextFieldDelegate{
+    var usernameField = UITextField()
+    var passwordField = UITextField()
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackground()
         setupLoginForm()
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dimissKeyboard))
+        view.addGestureRecognizer(tap)
+        
+        usernameField.delegate = self
+        passwordField.delegate = self
     }
     
     func setupBackground(){
@@ -40,17 +48,19 @@ class LoginViewController: UIViewController{
         usernameLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         usernameLabel.text = "Username"
         
-        let usernameField = UITextField(frame: CGRect(x: textFieldXPos, y: (2.5*loginViewMidpoint)/5.0, width: textFieldWidth
+        usernameField = UITextField(frame: CGRect(x: textFieldXPos, y: (2.5*loginViewMidpoint)/5.0, width: textFieldWidth
             , height: textFieldHeight))
         //usernameField.placeholder = "Username"
         usernameField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
+        usernameField.textColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
         
         let passwordLabel = UILabel(frame: CGRect(x: textFieldXPos, y: (4*loginViewMidpoint)/5.0, width: textFieldWidth, height: labelHeight))
         passwordLabel.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
         passwordLabel.text = "Password"
         
-        let passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: (5.5*loginViewMidpoint)/5.0, width: textFieldWidth, height: textFieldHeight))
+        passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: (5.5*loginViewMidpoint)/5.0, width: textFieldWidth, height: textFieldHeight))
         passwordField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
+        passwordField.textColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
         
         let loginButton = UIButton(frame: CGRect(x: 2.0*loginForm.frame.width/5.0, y: (8*loginViewMidpoint)/5.0, width: loginForm.frame.width/5.0, height: loginForm.frame.height/10.0))
         loginButton.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
@@ -68,10 +78,28 @@ class LoginViewController: UIViewController{
     }
     
     @objc func loginUser(sender: UIButton){
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let viewController = storyboard.instantiateViewController(withIdentifier: "TabBar")
-        self.present(viewController, animated: true, completion: nil)
+        Auth.auth().signIn(withEmail: self.usernameField.text!+"@furnish.com", password: self.passwordField.text!) {(user, error) in
+            //...
+            if error != nil{
+                //There was some error
+                print(error!)
+            }else{
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let viewController = storyboard.instantiateViewController(withIdentifier: "TabBar")
+                self.present(viewController, animated: true, completion: nil)
+                UserDefaults.standard.set(true, forKey: "IsUserLoggedIn")
+                UserDefaults.standard.synchronize()
+            }
+        }
     }
     
+    @objc func dimissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.view.endEditing(true)
+        return false
+    }
     
 }
