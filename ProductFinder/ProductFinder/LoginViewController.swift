@@ -61,6 +61,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate{
         passwordField = UITextField(frame: CGRect(x: textFieldXPos, y: (5.5*loginViewMidpoint)/5.0, width: textFieldWidth, height: textFieldHeight))
         passwordField.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         passwordField.textColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
+        passwordField.isSecureTextEntry = true
+        self.view.addSubview(passwordField)
         
         let loginButton = UIButton(frame: CGRect(x: 2.0*loginForm.frame.width/5.0, y: (8*loginViewMidpoint)/5.0, width: loginForm.frame.width/5.0, height: loginForm.frame.height/10.0))
         loginButton.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
@@ -84,11 +86,11 @@ class LoginViewController: UIViewController, UITextFieldDelegate{
                 //There was some error
                 print(error!)
             }else{
+                UserDefaults.standard.set(true, forKey: "IsUserLoggedIn")
+                UserDefaults.standard.synchronize()
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 let viewController = storyboard.instantiateViewController(withIdentifier: "TabBar")
                 self.present(viewController, animated: true, completion: nil)
-                UserDefaults.standard.set(true, forKey: "IsUserLoggedIn")
-                UserDefaults.standard.synchronize()
             }
         }
     }

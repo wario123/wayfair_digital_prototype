@@ -20,6 +20,7 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
+        //self.title = ""
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -69,12 +70,12 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
         //Setting up our collection view and its intended layout
         let collectionLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         collectionLayout.sectionInset = UIEdgeInsets(top: 5.0, left: 5.0, bottom: 5.0, right: 5.0)
-        collectionLayout.itemSize = CGSize(width: UIScreen.main.bounds.width/2.0-15.0, height: UIScreen.main.bounds.height/3.0)
+        collectionLayout.itemSize = CGSize(width: UIScreen.main.bounds.width/2.0-15.0, height: 315.0)
         
         self.collectionView = UICollectionView(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: self.view.bounds.height), collectionViewLayout: collectionLayout)
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.backgroundColor = UIColor(displayP3Red: 0.96, green: 0.96, blue: 0.93, alpha: 1.0)
+        collectionView.backgroundColor = UIColor(red:0.96, green:0.96, blue:0.93, alpha:1)
         collectionView.register(ItemCell.self, forCellWithReuseIdentifier: itemCellId)
         self.view.addSubview(collectionView)
     }
@@ -96,7 +97,10 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
                 let currentSeller = (productInfo as? NSDictionary)!["Seller"]
                 let currentType = (productInfo as? NSDictionary)!["Type"]
                 let currentPrice = (productInfo as? NSDictionary)!["Price"]
-                let product = Product(productName: productName as! String, productSeller: currentSeller as! String, productType: currentType as! String, productPrice: currentPrice as! Double)
+                let starRating = (productInfo as? NSDictionary)!["Star_Rating"]
+                let latitude = (productInfo as? NSDictionary)!["Latitude"]
+                let longitude = (productInfo as? NSDictionary)!["Longitude"]
+                let product = Product(productName: productName as! String, productSeller: currentSeller as! String, productType: currentType as! String, productPrice: currentPrice as! Double, productRating: starRating as! Double, productLatitude: latitude as! Double, productLongitude: longitude as! Double)
                 
                 self.currentProducts.append(product)
             }
@@ -118,15 +122,104 @@ class ShopViewController: UIViewController, UICollectionViewDataSource, UICollec
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: itemCellId, for: indexPath) as! ItemCell
         let currentProduct: Product = currentProducts[indexPath.row]
-        cell.nameLabel.text = currentProduct.getName()
-        cell.sellerLabel.text = "by \(currentProduct.getSeller())"
-        cell.priceLabel.text = "$\(currentProduct.getPrice())"
         
+        cell.nameLabel.textColor = UIColor.black
+        cell.nameLabel.lineBreakMode = .byWordWrapping
+        cell.nameLabel.numberOfLines = 0
+        let nameContent = currentProduct.getName()
+        let nameString = NSMutableAttributedString(string: nameContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Heavy", size: 15)!
+            ])
+        let nameRange = NSRange(location: 0, length: nameString.length)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 1
+        nameString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: nameRange)
+        nameString.addAttribute(NSAttributedString.Key.kern, value: 0.56, range: nameRange)
+        cell.nameLabel.attributedText = nameString
+        cell.nameLabel.sizeToFit()
+        
+        cell.sellerLabel.lineBreakMode = .byWordWrapping
+        cell.sellerLabel.numberOfLines = 0
+        cell.sellerLabel.textColor = UIColor(red:0.61, green:0.61, blue:0.61, alpha:1)
+        let sellerContent =  "by \(currentProduct.getSeller())"
+        let sellerString = NSMutableAttributedString(string: sellerContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Book", size: 15)!
+            ])
+        let sellerNameRange = NSRange(location: 0, length: sellerString.length)
+        sellerString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: sellerNameRange)
+        sellerString.addAttribute(NSAttributedString.Key.kern, value: 0.56, range: sellerNameRange)
+        cell.sellerLabel.attributedText = sellerString
+        cell.sellerLabel.sizeToFit()
+        
+        
+        cell.priceLabel.lineBreakMode = .byWordWrapping
+        cell.priceLabel.numberOfLines = 0
+        cell.priceLabel.textColor = UIColor(red:0.82, green:0.01, blue:0.11, alpha:1)
+        let priceContent = "$\(currentProduct.getPrice())"
+        let priceString = NSMutableAttributedString(string: priceContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Medium", size: 20)!
+            ])
+        let priceRange = NSRange(location: 0, length: priceString.length)
+        priceString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: priceRange)
+        priceString.addAttribute(NSAttributedString.Key.kern, value: 0.56, range: priceRange)
+        cell.priceLabel.attributedText = priceString
+        cell.priceLabel.sizeToFit()
         
         //let storageRef = Storage.storage().reference()
         let imageName = currentProduct.getName().lowercased().replacingOccurrences(of: " ", with: "") + ".png"
         cell.itemImageView.image = UIImage(named: imageName)
         currentProductImages.append(UIImage(named: imageName)!)
+        
+        if currentProduct.getRating() >= 1.0{
+            cell.star1.image = UIImage(named: "filled_star")
+        }else{
+            if currentProduct.getRating() == 0.5{
+                cell.star1.image = UIImage(named: "half_star")
+            }else{
+                cell.star1.image = UIImage(named: "empty_star")
+            }
+        }
+        
+        if currentProduct.getRating() >= 2.0{
+            cell.star2.image = UIImage(named: "filled_star")
+        }else{
+            if currentProduct.getRating() == 1.5{
+                cell.star2.image = UIImage(named: "half_star")
+            }else{
+                cell.star2.image = UIImage(named: "empty_star")
+            }
+        }
+        
+        if currentProduct.getRating() >= 3.0{
+            cell.star3.image = UIImage(named: "filled_star")
+        }else{
+            if currentProduct.getRating() == 2.5{
+                cell.star3.image = UIImage(named: "half_star")
+            }else{
+                cell.star3.image = UIImage(named: "empty_star")
+            }
+        }
+        
+        if currentProduct.getRating() >= 4.0{
+            cell.star4.image = UIImage(named: "filled_star")
+        }else{
+            if currentProduct.getRating() == 3.5{
+                cell.star4.image = UIImage(named: "half_star")
+            }else{
+                cell.star4.image = UIImage(named: "empty_star")
+            }
+        }
+        
+        if currentProduct.getRating() == 5.0{
+            cell.star5.image = UIImage(named: "filled_star")
+        }else{
+            if currentProduct.getRating() == 4.5{
+                cell.star5.image = UIImage(named: "half_star")
+            }else{
+                cell.star5.image = UIImage(named: "empty_star")
+            }
+        }
+        
         return cell
         
         /*let currentImageRef = storageRef.child("images/\(imageName)")
@@ -180,6 +273,13 @@ class ItemCell: UICollectionViewCell{
         self.addSubview(nameLabel)
         self.addSubview(sellerLabel)
         self.addSubview(priceLabel)
+        self.addSubview(star1)
+        self.addSubview(star2)
+        self.addSubview(star3)
+        self.addSubview(star4)
+        self.addSubview(star5)
+        self.addSubview(numberRatings)
+        self.addSubview(shippingLabel)
         
         itemImageView.anchor(top: safeAreaLayoutGuide.topAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: nil, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 10, paddingLeft: 10, paddingBottom: 0, paddingRight: 10, width: 0, height: self.frame.height/3)
         
@@ -188,6 +288,20 @@ class ItemCell: UICollectionViewCell{
         sellerLabel.anchor(top:nameLabel.bottomAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: nil, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5, paddingLeft: 10, paddingBottom: 0, paddingRight:10, width: 0, height: self.frame.height/10)
         
         priceLabel.anchor(top:sellerLabel.bottomAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: nil, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5, paddingLeft: 10, paddingBottom: 0, paddingRight:10, width: 0, height: self.frame.height/10)
+        
+        star1.anchor(top: priceLabel.bottomAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: nil, right: nil, paddingTop: 5, paddingLeft: 10, paddingBottom: 0, paddingRight: 0, width: 11.39, height: 10.83)
+        
+        star2.anchor(top: priceLabel.bottomAnchor, left: star1.rightAnchor, bottom: nil, right: nil, paddingTop: 5, paddingLeft: 5, paddingBottom: 0, paddingRight: 0, width: 11.39, height: 10.83)
+        
+        star3.anchor(top: priceLabel.bottomAnchor, left: star2.rightAnchor, bottom: nil, right: nil, paddingTop: 5, paddingLeft: 5, paddingBottom: 0, paddingRight: 0, width: 11.39, height: 10.83)
+        
+        star4.anchor(top: priceLabel.bottomAnchor, left: star3.rightAnchor, bottom: nil, right: nil, paddingTop: 5, paddingLeft: 5, paddingBottom: 0, paddingRight: 0, width: 11.39, height: 10.83)
+        
+        star5.anchor(top: priceLabel.bottomAnchor, left: star4.rightAnchor, bottom: nil, right: nil, paddingTop: 5, paddingLeft: 5, paddingBottom: 0, paddingRight: 0, width: 11.39, height: 10.83)
+        
+        numberRatings.anchor(top: priceLabel.bottomAnchor, left: star5.rightAnchor, bottom: nil, right: nil, paddingTop: 5, paddingLeft: 5, paddingBottom: 0, paddingRight: 0, width: 33.0, height: 12.0)
+        
+        shippingLabel.anchor(top: star1.bottomAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: nil, right: nil, paddingTop: 20, paddingLeft: 10, paddingBottom: 0, paddingRight: 0, width: 106.53, height: 17.0)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -200,25 +314,99 @@ class ItemCell: UICollectionViewCell{
     }()
     
     let nameLabel: UILabel = {
-        let label = UILabel()
-        return label
+        let textLayer = UILabel(frame: CGRect(x: 13, y: 365, width: 156.02, height: 28))
+        //textLayer.lineBreakMode = .byWordWrapping
+        //textLayer.numberOfLines = 0
+        return textLayer
     }()
     
     let sellerLabel: UILabel = {
-        let label = UILabel()
+        /*let label = UILabel()
         label.lineBreakMode = NSLineBreakMode.byWordWrapping
         label.numberOfLines = 2
         label.textColor = UIColor.darkGray
         label.textAlignment = NSTextAlignment.center
-        return label
+        return label*/
+        let textLayer = UILabel(frame: CGRect(x: 13.46, y: 401, width: 144.19, height: 14))
+        return textLayer
     }()
     
     let priceLabel: UILabel = {
-        let label = UILabel()
+        /*let label = UILabel()
         label.adjustsFontSizeToFitWidth = true
         label.textAlignment = NSTextAlignment.center
         label.textColor = UIColor.red
-        return label
+        return label*/
+        let textLayer = UILabel(frame: CGRect(x: 13, y: 423, width: 73, height: 19))
+        return textLayer
+        //self.view.addSubview(textLayer)
     }()
     
+    let star1: UIImageView = {
+        let layer = UIImageView(frame: CGRect(x: 13, y: 449, width: 11.39, height: 10.83))
+        layer.image = UIImage(named: "filled_star")
+        return layer
+    }()
+    
+    let star2: UIImageView = {
+        let layer = UIImageView(frame: CGRect(x: 13, y: 449, width: 11.39, height: 10.83))
+        layer.image = UIImage(named: "filled_star")
+        return layer
+    }()
+    
+    let star3: UIImageView = {
+        let layer = UIImageView(frame: CGRect(x: 13, y: 449, width: 11.39, height: 10.83))
+        layer.image = UIImage(named: "filled_star")
+        return layer
+    }()
+    
+    let star4: UIImageView = {
+        let layer = UIImageView(frame: CGRect(x: 13, y: 449, width: 11.39, height: 10.83))
+        layer.image = UIImage(named: "filled_star")
+        return layer
+    }()
+    
+    let star5: UIImageView = {
+        let layer = UIImageView(frame: CGRect(x: 13, y: 449, width: 11.39, height: 10.83))
+        layer.image = UIImage(named: "filled_star")
+        return layer
+    }()
+    
+    let numberRatings: UILabel = {
+        let textLayer = UILabel(frame: CGRect(x: 77, y: 450, width: 33, height: 12))
+        textLayer.lineBreakMode = .byWordWrapping
+        textLayer.numberOfLines = 0
+        textLayer.textColor = UIColor(red:0.61, green:0.61, blue:0.61, alpha:1)
+        let textContent = "4623"
+        let textString = NSMutableAttributedString(string: textContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Medium", size: 13)!
+            ])
+        let textRange = NSRange(location: 0, length: textString.length)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 1
+        textString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: textRange)
+        textString.addAttribute(NSAttributedString.Key.kern, value: 0.96, range: textRange)
+        textLayer.attributedText = textString
+        textLayer.sizeToFit()
+        return textLayer
+    }()
+    
+    let shippingLabel: UILabel = {
+        let textLayer = UILabel(frame: CGRect(x: 13.46, y: 470, width: 106.53, height: 14))
+        textLayer.lineBreakMode = .byWordWrapping
+        textLayer.numberOfLines = 0
+        textLayer.textColor = UIColor.black
+        let textContent = "Free Shipping"
+        let textString = NSMutableAttributedString(string: textContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Medium", size: 15)!
+            ])
+        let textRange = NSRange(location: 0, length: textString.length)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 1
+        textString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: textRange)
+        textString.addAttribute(NSAttributedString.Key.kern, value: 0.56, range: textRange)
+        textLayer.attributedText = textString
+        textLayer.sizeToFit()
+        return textLayer
+    }()
 }

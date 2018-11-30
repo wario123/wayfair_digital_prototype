@@ -19,13 +19,25 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
     var locationManager = CLLocationManager()
     var latitude = 0.0
     var longitude = 0.0
+    var infoShowing = false
     
     override func viewDidLoad(){
         super.viewDidLoad()
+        //self.title = ""
+        let alert = UIAlertController(title: "Note", message: "Check into businesses for discounts!", preferredStyle: UIAlertController.Style.alert)
+        let cancelAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.cancel) {
+            UIAlertAction in
+            alert.removeFromParent()
+        }
+        alert.addAction(cancelAction)
+        //self.present(alert, animated: true, completion: nil)
     }
     
     var currentBusinesses = [Business]()
+    var currentProducts = [String]()
     var currentProductName = ""
+    var currentTag = 0
+    var indexChosen = 0
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -40,7 +52,17 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
         locationManager.delegate = self
         
         self.currentBusinesses.removeAll()
-        self.currentBusinesses = loadRelevantBusinesses {
+        self.currentProducts.removeAll()
+        
+        if self.currentProductName.count > 0 {
+            self.currentBusinesses = loadRelevantBusinesses {
+            }
+        }else{
+            self.currentBusinesses = loadAllProductInfo {
+                self.currentProducts = self.loadAllProductInfo2{
+                    
+                }
+            }
         }
     }
     
@@ -75,14 +97,104 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
         navigationItem.titleView = titleLabel
     }
     
-    func loadRelevantBusinesses(completion: @escaping ()->()) -> [Business]{
+    func loadAllProductInfo2(completion: @escaping ()->()) -> [String]{
+        let ref: DatabaseReference = Database.database().reference()
+        ref.child("furniture").observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            for (productName, _) in value ?? [:]{
+                self.currentProducts.append(productName as! String)
+            }
+        })
+        return self.currentProducts
+    }
+    
+    func loadAllProductInfo(completion: @escaping ()->()) -> [Business]{
         let ref: DatabaseReference = Database.database().reference()
         
-        let camera = GMSCameraPosition.camera(withLatitude: 40.7831, longitude: -73.9712, zoom: 10.0)
+        let camera = GMSCameraPosition.camera(withLatitude: 40.7605, longitude: -73.951, zoom: 35)
         let mapView = GMSMapView.map(withFrame: self.view.frame, camera: camera)
         
         let customSC = self.customSegments
-        customSC.frame = CGRect(x: 0.0, y: (7.0*view.frame.height)/8.0, width: view.frame.width/2.0, height: view.frame.height/10.0)
+        customSC.frame = CGRect(x: 0.0, y: (0.25*view.frame.height)/8.0, width: view.frame.width/2.0, height: view.frame.height/10.0)
+        customSC.backgroundColor = UIColor.white
+        customSC.center.x = self.view.center.x
+        customSC.selectedSegmentIndex = 0
+        mapView.addSubview(customSC)
+        
+        self.view = mapView
+        mapView.delegate = self
+        mapView.settings.myLocationButton = true
+        mapView.isMyLocationEnabled = true
+        
+        ref.child("furniture").observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            for (productName, productInfo) in value ?? [:]{
+                let currentBusinesses = (productInfo as? NSDictionary)!["businesses"] as? NSDictionary
+                //print(currentBusinesses?["\"0\""] ?? -1)
+                var businessNames = [String]()
+                for (_, businessName) in currentBusinesses!{
+                    businessNames.append(businessName as! String)
+                }
+                
+                ref.child("businesses").observeSingleEvent(of: .value, with: { (snapshot) in
+                    let value = snapshot.value as? NSDictionary
+                    for (businessName, businessInfo) in value ?? [:]{
+                        if businessNames.contains(businessName as! String){
+                            let address = (businessInfo as? NSDictionary)!["Address"] as! String
+                            let type = (businessInfo as? NSDictionary)!["Type"] as! String
+                            let latitude = (businessInfo as? NSDictionary)!["Latitude"] as! Double
+                            let longitude = (businessInfo as? NSDictionary)!["Longitude"] as! Double
+                            let note = (businessInfo as? NSDictionary)!["Description"] as! String
+                            let id = (businessInfo as? NSDictionary)!["ID"] as! String
+                            let open = (businessInfo as? NSDictionary)!["Open"] as! Double
+                            let close = (businessInfo as? NSDictionary)!["Close"] as! Double
+                            let rating = (businessInfo as? NSDictionary)!["Rating"] as! Double
+                            let price = (businessInfo as? NSDictionary)!["Price"] as! String
+                            
+                            let currentBusiness = Business(name: businessName as! String, address: address, note: note,type: type, latitude: latitude, longitude: longitude, id: id, open: open, close: close, rating: rating, price: price)
+                            if(!self.currentBusinesses.contains(currentBusiness)){
+                                self.currentBusinesses.append(currentBusiness)
+                            }
+                        }
+                    }
+                    
+                    print("\(String(describing: self.locationManager.location?.coordinate.latitude)), \(String(describing: self.locationManager.location?.coordinate.longitude))")
+                    mapView.camera = GMSCameraPosition.camera(withLatitude: /*(self.locationManager.location?.coordinate.latitude) ??*/ 40.7605, longitude: /*(self.locationManager.location?.coordinate.longitude) ??*/ -73.951, zoom: 14.0)
+                    
+                    print(self.currentBusinesses.count)
+                    
+                    for currBusiness in self.currentBusinesses{
+                        //print("\(currBusiness.getLatitude()), \(currBusiness.getLongitude())")
+                        // Creates a marker in the center of the map.
+                        let marker = GMSMarker()
+                        marker.icon = UIImage(named: "location_marker")
+                        marker.position = CLLocationCoordinate2D(latitude: currBusiness.getLatitude(), longitude: currBusiness.getLongitude())
+                        marker.title = currBusiness.getName()
+                        marker.snippet = currBusiness.getNote()
+                        marker.map = mapView
+                    }
+                    
+                })
+            }
+            completion()
+        }) { (error) in
+            print(error.localizedDescription)
+        }
+        
+        return self.currentBusinesses
+    }
+    
+    func loadRelevantBusinesses(completion: @escaping ()->()) -> [Business]{
+        let ref: DatabaseReference = Database.database().reference()
+        
+        let camera = GMSCameraPosition.camera(withLatitude: 40.7605, longitude: -73.951, zoom: 20)
+        let mapView = GMSMapView.map(withFrame: self.view.frame, camera: camera)
+        
+        let customSC = self.customSegments
+        customSC.frame = CGRect(x: 0.0, y: (0.25*view.frame.height)/8.0, width: view.frame.width/2.0, height: view.frame.height/10.0)
+        customSC.backgroundColor = UIColor.white
         customSC.center.x = self.view.center.x
         customSC.selectedSegmentIndex = 0
         mapView.addSubview(customSC)
@@ -130,9 +242,8 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
                             }
                         }
                         
-                        
                         print("\(String(describing: self.locationManager.location?.coordinate.latitude)), \(String(describing: self.locationManager.location?.coordinate.longitude))")
-                        mapView.camera = GMSCameraPosition.camera(withLatitude: (self.locationManager.location?.coordinate.latitude) ?? 40.7831, longitude: (self.locationManager.location?.coordinate.longitude) ?? -73.9712, zoom: 10.0)
+                        mapView.camera = GMSCameraPosition.camera(withLatitude: /*(self.locationManager.location?.coordinate.latitude) ??*/ 40.7605, longitude: /*(self.locationManager.location?.coordinate.longitude) ??*/ -73.951, zoom: 14.0)
                         
                         print(self.currentBusinesses.count)
                         
@@ -140,9 +251,10 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
                             //print("\(currBusiness.getLatitude()), \(currBusiness.getLongitude())")
                             // Creates a marker in the center of the map.
                             let marker = GMSMarker()
+                            marker.icon = UIImage(named: "location_marker")
                             marker.position = CLLocationCoordinate2D(latitude: currBusiness.getLatitude(), longitude: currBusiness.getLongitude())
                             marker.title = currBusiness.getName()
-                            marker.snippet = currBusiness.getNote() + "|" + currBusiness.getID()
+                            marker.snippet = currBusiness.getNote()
                             marker.map = mapView
                         }
                         
@@ -157,6 +269,139 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
         }
         
         return currentBusinesses
+    }
+    
+    //Function for handling the tap on the marker
+    func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool {
+        
+        if currentTag > 2 {
+            let view1 = self.view.viewWithTag(self.currentTag-2)
+            let view2 = self.view.viewWithTag(self.currentTag-1)
+            view1?.removeFromSuperview()
+            view2?.removeFromSuperview()
+        }
+        
+        let infoLayer = UIControl(frame: CGRect(x: 149, y: (553*view.frame.height)/812.0, width: (209*view.frame.width)/375.0, height: (135*view.frame.height)/812.0))
+        infoLayer.backgroundColor = UIColor.white
+        infoLayer.layer.shadowOffset = CGSize(width: 0, height: 2)
+        infoLayer.layer.shadowColor = UIColor(red:0, green:0, blue:0, alpha:0.5).cgColor
+        infoLayer.layer.shadowOpacity = 1
+        infoLayer.layer.shadowRadius = 4
+        self.view.addSubview(infoLayer)
+        //Product Name
+        let textLayer = UILabel()
+        textLayer.lineBreakMode = .byWordWrapping
+        textLayer.numberOfLines = 0
+        textLayer.textColor = UIColor(red:0.47, green:0.29, blue:0.47, alpha:1)
+        var textContent = currentProductName
+        var index = 0
+        print("lenght of products: \(currentProducts.count)")
+        if currentProductName.count == 0{
+            for currentBusiness in currentBusinesses{
+                if currentBusiness.getLatitude() == marker.position.latitude && currentBusiness.getLongitude() == marker.position.longitude{
+                    textContent = self.currentProducts[index]
+                    break
+                }
+                index+=1
+            }
+        }
+        self.indexChosen = index
+        let textString = NSMutableAttributedString(string: textContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Heavy", size: 13)!
+            ])
+        let textRange = NSRange(location: 0, length: textString.length)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 1
+        textString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: textRange)
+        textString.addAttribute(NSAttributedString.Key.kern, value: 0.48, range: textRange)
+        textLayer.attributedText = textString
+        textLayer.sizeToFit()
+        infoLayer.addSubview(textLayer)
+        textLayer.anchor(top: infoLayer.topAnchor, left: infoLayer.leftAnchor, bottom: infoLayer.bottomAnchor, right: nil, paddingTop: (19.0*view.frame.height)/812.0, paddingLeft: (10.0*view.frame.width)/375.0, paddingBottom: -1*(89.0*view.frame.height)/812.0, paddingRight: 0.0)
+        //Business Name
+        let businessNameLayer = UILabel(/*frame: CGRect(x: 159, y: 609, width: 62, height: 12)*/)
+        businessNameLayer.lineBreakMode = .byWordWrapping
+        businessNameLayer.numberOfLines = 0
+        businessNameLayer.textColor = UIColor.darkGray
+        var businessNameContent = currentBusinesses[0].getName()
+        if self.currentProductName.count == 0{
+            businessNameContent = currentBusinesses[index].getName()
+        }
+        let businessNameString = NSMutableAttributedString(string: businessNameContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Medium", size: 13)!
+            ])
+        let businessNameRange = NSRange(location: 0, length: businessNameString.length)
+        let businessNameStyle = NSMutableParagraphStyle()
+        businessNameStyle.lineSpacing = 1
+        businessNameString.addAttribute(NSAttributedString.Key.paragraphStyle, value:businessNameStyle, range: businessNameRange)
+        businessNameString.addAttribute(NSAttributedString.Key.kern, value: 0.48, range: businessNameRange)
+        businessNameLayer.attributedText = businessNameString
+        businessNameLayer.sizeToFit()
+        infoLayer.addSubview(businessNameLayer)
+        businessNameLayer.anchor(top: infoLayer.topAnchor, left: infoLayer.leftAnchor, bottom: infoLayer.bottomAnchor, right: nil, paddingTop: (56.0*view.frame.height)/812.0, paddingLeft: (10.0*view.frame.width)/375.0, paddingBottom: -1*(60.0*view.frame.height)/812.0, paddingRight: 0.0)
+        //Business Address Label
+        let addressLayer = UILabel(/*frame: CGRect(x: 159, y: 641, width: 78, height: 12)*/)
+        addressLayer.lineBreakMode = .byWordWrapping
+        addressLayer.numberOfLines = 0
+        addressLayer.textColor = UIColor(red:0.61, green:0.61, blue:0.61, alpha:1)
+        var addressContent = "405 main st."
+        if self.currentBusinesses.count == 1{
+            addressContent = String(self.currentBusinesses[0].getAddress().split(separator: ",")[0])
+        }else{
+            for currentBusiness in currentBusinesses{
+                if currentBusiness.getLatitude() == marker.position.latitude && currentBusiness.getLongitude() == marker.position.longitude{
+                    addressContent = String(currentBusiness.getAddress().split(separator: ",")[0])
+                    break
+                }
+            }
+        }
+        let addressString = NSMutableAttributedString(string: addressContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Roman", size: 13)!
+            ])
+        let addressRange = NSRange(location: 0, length: addressString.length)
+        let addressStyle = NSMutableParagraphStyle()
+        addressStyle.lineSpacing = 1
+        addressString.addAttribute(NSAttributedString.Key.paragraphStyle, value:addressStyle, range: addressRange)
+        addressString.addAttribute(NSAttributedString.Key.kern, value: 0.48, range: addressRange)
+        addressLayer.attributedText = addressString
+        addressLayer.sizeToFit()
+        infoLayer.addSubview(addressLayer)
+        addressLayer.anchor(top: infoLayer.topAnchor, left: infoLayer.leftAnchor, bottom: infoLayer.bottomAnchor, right: nil, paddingTop: (88.0*view.frame.height)/812.0, paddingLeft: (10.0*view.frame.width)/375.0, paddingBottom: -1*(30.0*view.frame.height)/812.0, paddingRight: 0.0)
+        
+        let imageLayer = UIImageView(frame: CGRect(x: 17, y: (553*view.frame.height)/812.0, width: (135*view.frame.width)/375.0, height: (135*view.frame.height)/812.0))
+        imageLayer.layer.shadowOffset = CGSize(width: 0, height: 2)
+        imageLayer.layer.shadowColor = UIColor(red:0, green:0, blue:0, alpha:0.5).cgColor
+        imageLayer.layer.shadowOpacity = 1
+        imageLayer.layer.shadowRadius = 4
+        var imageName = self.currentBusinesses[0].getName().lowercased().replacingOccurrences(of: " ", with: "") + ".png"
+        if self.currentProductName.count == 0{
+            imageName = self.currentProducts[index].lowercased().replacingOccurrences(of: " ", with: "") + ".png"
+        }
+        imageLayer.image = UIImage(named: imageName)
+        self.view.addSubview(imageLayer)
+        
+        infoLayer.tag = self.currentTag
+        imageLayer.tag = self.currentTag+1
+        
+        infoLayer.addTarget(self, action: #selector(goToBusinessPage), for: .touchUpInside)
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(goToBusinessPage))
+        imageLayer.isUserInteractionEnabled = true
+        imageLayer.addGestureRecognizer(tapGestureRecognizer)
+        
+        self.currentTag+=2
+        return true
+    }
+    
+    @objc func goToBusinessPage(){
+        let businessVC = BusinessViewController()
+        if self.currentProductName.count > 0{
+            businessVC.currentBusiness = self.currentBusinesses[0]
+            businessVC.currentDistance = abs(self.latitude-self.currentBusinesses[0].getLatitude()) + abs(self.longitude-self.currentBusinesses[0].getLongitude())
+        }else{
+            businessVC.currentBusiness = self.currentBusinesses[self.indexChosen]
+            businessVC.currentDistance = abs(self.latitude-self.currentBusinesses[0].getLatitude()) + abs(self.longitude-self.currentBusinesses[0].getLongitude())
+        }
+        self.navigationController?.pushViewController(businessVC, animated: false)
     }
     
     func loadBusinessListView(){
@@ -222,7 +467,7 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
     let customSegments: UISegmentedControl = {
         let items = ["Map View", "List View"]
         let customSC = UISegmentedControl(items: items)
-        customSC.tintColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
+        customSC.tintColor = UIColor(red:0.2, green:0.44, blue:0.51, alpha:1)
         customSC.selectedSegmentIndex = 0
         customSC.addTarget(self, action: #selector(changeView), for: UIControl.Event.valueChanged)
         return customSC
@@ -232,8 +477,17 @@ class LocationViewController: UIViewController, GMSMapViewDelegate, CLLocationMa
         switch sender.selectedSegmentIndex {
         case 0:
             self.currentBusinesses.removeAll()
-            self.currentBusinesses = loadRelevantBusinesses {
-
+            self.currentProducts.removeAll()
+            
+            if self.currentProductName.count > 0 {
+                self.currentBusinesses = loadRelevantBusinesses {
+                }
+            }else{
+                self.currentBusinesses = loadAllProductInfo {
+                    self.currentProducts = self.loadAllProductInfo2{
+                        
+                    }
+                }
             }
         case 1:
             self.view.subviews.forEach({ $0.removeFromSuperview() })
@@ -271,7 +525,7 @@ class BusinessCell: UITableViewCell{
         let label = UILabel()
         label.adjustsFontSizeToFitWidth = true
         //label.textAlignment = NSTextAlignment.center
-        label.textColor = UIColor(displayP3Red: 0.0/255, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
+        label.textColor = UIColor(red:0.47, green:0.29, blue:0.47, alpha:1)
         return label
     }()
     

@@ -42,14 +42,23 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
         print(currentBusiness.getName())
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        //self.navigationController?.navigationBar.isHidden = false
+        //navigationItem.backBarButtonItem = UIBarButtonItem(title: "Back", style: .plain, target: nil, action: nil)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.view.backgroundColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
-        self.navigationItem.title = currentBusiness.getName()
+        //self.navigationController?.navigationBar.frame = CGRect(x: 0.0, y: 0.0, width: view.frame.width, height: CGFloat(view.frame.height/2.0))
+        //self.navigationItem.title = currentBusiness.getName()
         //loadBusinessInfo()
+        //self.navigationController?.navigationBar.isHidden = true
+
         let collectionLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         
-        self.collectionView = UICollectionView(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: self.view.bounds.height), collectionViewLayout: collectionLayout)
+        self.collectionView = UICollectionView(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: self.view.bounds.height/*UIScreen.main.bounds.height*/), collectionViewLayout: collectionLayout)
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.backgroundColor = UIColor.white
@@ -92,7 +101,7 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
     }*/
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 4
+        return 3
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -108,7 +117,7 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if indexPath.section == 0 || indexPath.section == 3{
+        if indexPath.section == 0 || indexPath.section == 2{
             return CGSize(width: view.frame.width, height: CGFloat(view.frame.height/2.0))
         }else if indexPath.section == 1{
             return CGSize(width: CGFloat(view.frame.width), height: CGFloat(view.frame.height/5.0))
@@ -182,6 +191,7 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
             
             //let storageRef = Storage.storage().reference()
             let imageName = self.currentBusiness.getName().lowercased().replacingOccurrences(of: " ", with: "") + ".png"
+            //self.navigationController?.navigationBar.setBackgroundImage(UIImage(named: imageName), for: .default)
             cell.productImageView.image = UIImage(named: imageName)
             /*let currentImageRef = storageRef.child("images/\(imageName)")
             currentImageRef.getData(maxSize: 1024 * 1024 * 1024) { data, error in
@@ -273,7 +283,7 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
             
             
             return cell
-        }else if indexPath.section == 2{
+        }/*else if indexPath.section == 2{
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.checkInCellId, for: indexPath) as! CheckInCell
             print("current Distance = \(currentDistance)")
             /*if(currentDistance < 0.004){
@@ -284,10 +294,11 @@ class BusinessViewController: UIViewController, UICollectionViewDelegate, UIColl
                 cell.checkInButton.isUserInteractionEnabled = false
             }*/
             return cell
-        }else{
+        }*/else{
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.mapViewCellId, for: indexPath) as! MapViewCell
             cell.mapView.camera = GMSCameraPosition.camera(withLatitude: currentBusiness.getLatitude(), longitude: currentBusiness.getLongitude(), zoom: 10.0)
             let marker = GMSMarker(position: CLLocationCoordinate2D(latitude: currentBusiness.getLatitude(), longitude: currentBusiness.getLongitude()))
+            marker.icon = UIImage(named: "location_marker")
             marker.map = cell.mapView
             marker.title = currentBusiness.getName()
             marker.snippet = currentBusiness.getNote()
@@ -391,7 +402,7 @@ class BusinessInfoCell: UICollectionViewCell{
     
     var productPriceLevel: UILabel = {
         let priceLabel = UILabel()
-        priceLabel.textColor = UIColor.red
+        priceLabel.textColor = UIColor(red:0.2, green:0.44, blue:0.51, alpha:1)
         return priceLabel
     }()
     
@@ -402,18 +413,33 @@ class BusinessInfoCell: UICollectionViewCell{
     }()
     
     let openStatus: UILabel = {
-        let openLabel = UILabel()
-        openLabel.textColor = UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
-        return openLabel
+        let textLayer = UILabel()
+        textLayer.lineBreakMode = .byWordWrapping
+        textLayer.numberOfLines = 0
+        let textContent = "Open 10:00-22:30"
+        let textString = NSMutableAttributedString(string: textContent, attributes: [
+            NSAttributedString.Key.font: UIFont(name: "Avenir-Medium", size: 15)!
+            ])
+        let textRange = NSRange(location: 0, length: textString.length)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 1
+        textString.addAttribute(NSAttributedString.Key.paragraphStyle, value:paragraphStyle, range: textRange)
+        textString.addAttribute(NSAttributedString.Key.kern, value: 0.48, range: textRange)
+        textLayer.attributedText = textString
+        textLayer.sizeToFit()
+        textLayer.textColor = UIColor(red:0.47, green:0.29, blue:0.47, alpha:1)
+        return textLayer
     }()
 }
 
 class CheckInCell: UICollectionViewCell{
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.contentView.layer.borderColor = UIColor.black.cgColor
-        self.contentView.layer.borderWidth = 2.0
-        self.contentView.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
+        self.addSubview(checkInLabel)
+        checkInLabel.anchor(top:safeAreaLayoutGuide.topAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5.0, paddingLeft: 5.0, paddingBottom: -5.0, paddingRight: 5.0, width: 0, height: 0)
+        //self.contentView.layer.borderColor = UIColor.black.cgColor
+        //self.contentView.layer.borderWidth = 2.0
+        //self.contentView.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         setUpCell()
     }
     
@@ -423,20 +449,36 @@ class CheckInCell: UICollectionViewCell{
     
     func setUpCell(){
         self.addSubview(checkInLabel)
-        checkInLabel.anchor(top:safeAreaLayoutGuide.topAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5.0, paddingLeft: 5.0, paddingBottom: 5.0, paddingRight: 5.0, width: 0, height: 0)
-        /*checkInButton.setTitle("Check In", for: UIControl.State.normal)
-        checkInButton.layer.cornerRadius = 10
+        /*checkInLabel.anchor(top:safeAreaLayoutGuide.topAnchor, left: safeAreaLayoutGuide.leftAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 5.0, paddingLeft: 5.0, paddingBottom: -5.0, paddingRight: 5.0, width: 0, height: 0)
+        checkInLabel.setTitle("Check In", for: UIControl.State.normal)*/
+        /*checkInButton.layer.cornerRadius = 10
         checkInButton.clipsToBounds = true*/
-        checkInLabel.textAlignment = .center
+        /*checkInLabel.textAlignment = .center
         checkInLabel.text = "Check In"
-        checkInLabel.textColor = UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0)
+        checkInLabel.textColor = UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0)*/
     }
     
     let checkInLabel: UILabel = {
-        let label = UILabel()
+        /*let label = UILabel()
         //button.backgroundColor = UIColor(displayP3Red: 57.0/255, green: 62.0/255, blue: 70.0/255, alpha: 1.0)
         //button.setTitleColor(UIColor(displayP3Red: 0.0, green: 173.0/255, blue: 181.0/255, alpha: 1.0), for: UIControl.State.normal)
-        return label
+        return label*/
+        
+        let layer = UILabel()
+        layer.layer.cornerRadius = 8
+        layer.layer.borderWidth = 2
+        layer.layer.borderColor = UIColor(red:0.47, green:0.29, blue:0.47, alpha:1).cgColor
+        layer.text = "Check In"
+        layer.textColor = UIColor(red:0.47, green:0.29, blue:0.47, alpha:1)
+        layer.textAlignment = NSTextAlignment.center
+        
+        let iconLayer = UIImageView()
+        iconLayer.backgroundColor = UIColor.white
+        iconLayer.image = UIImage(named: "checkin")
+        layer.addSubview(iconLayer)
+        layer.anchor(top: layer.topAnchor, left: layer.leftAnchor, bottom: layer.bottomAnchor, right: layer.rightAnchor, paddingTop: (8.0*layer.frame.height)/44.0, paddingLeft: (88.0*layer.frame.width)/339.0, paddingBottom: -1*(8.0*layer.frame.height)/44.0, paddingRight: (231.0*layer.frame.width)/339.0)
+        
+        return layer
     }()
 }
 

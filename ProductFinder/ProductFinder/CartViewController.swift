@@ -13,15 +13,27 @@ import FirebaseDatabase
 class CartViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
     var currentCart = [String]()
     let cartCellID = "cartCellId"
+    var tableView = UITableView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpNavBar()
-        setUpCart()
+        self.setUpCart()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        let databaseRef = Database.database().reference()
+        databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("cart").removeValue()
+        for element in self.currentCart{
+            let cartElement = ["name": element]
+            let cartRef = databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("cart").childByAutoId()
+            cartRef.setValue(cartElement)
+        }
     }
     
     func setUpNavBar(){
@@ -30,8 +42,30 @@ class CartViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func setUpCart(){
-        self.currentCart = UserDefaults.standard.stringArray(forKey: "cart") ?? []
-        let tableView = UITableView(frame: self.view.frame, style: UITableView.Style.plain)
+        //self.currentCart = UserDefaults.standard.stringArray(forKey: "cart") ?? [String]()
+        let databaseRef = Database.database().reference()
+        databaseRef.child("users").child((Auth.auth().currentUser?.uid)!).child("cart").observe(.value, with: { (snapshot) in
+        //print(snapshot.value!)
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]{
+                for snap in snapshots{
+                    let currentProductInfo = (snap.value! as! [String: String])
+                    if self.currentCart.count == 0{
+                        self.currentCart = [currentProductInfo["name"]] as! [String]
+                        //print(currentCart)
+                    }else{
+                        self.currentCart.append(currentProductInfo["name"]!)
+                        //print(currentCart)
+                    }
+                    //self.currentCart.append(snap.value as! String)
+                }
+            }
+            //Make UserDefaults consistent with the db
+            print(self.currentCart)
+            self.tableView.reloadData()
+        })
+        //}
+        tableView.tableFooterView = UIView(frame: .zero)
+        tableView = UITableView(frame: self.view.frame, style: UITableView.Style.plain)
         self.view = tableView
         tableView.delegate = self
         tableView.dataSource = self
@@ -54,8 +88,7 @@ class CartViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             self.currentCart.remove(at: indexPath.row)
-            UserDefaults.standard.set(self.currentCart, forKey: "cart")
-            tableView.deleteRows(at: [indexPath], with: .fade)
+            tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
         }
     }
     
@@ -104,7 +137,7 @@ class CartCell: UITableViewCell{
         
         priceLabel.anchor(top: nameLabel.bottomAnchor, left: itemImageView.rightAnchor, bottom: nil, right: safeAreaLayoutGuide.rightAnchor, paddingTop: 10, paddingLeft: 10, paddingBottom: 0, paddingRight: 10, width: 0, height: (2.5*self.frame.height)/6.0)
         
-        self.contentView.backgroundColor = UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
+        self.contentView.backgroundColor = UIColor.white //UIColor(displayP3Red: 238.0/255, green: 238.0/255, blue: 238.0/255, alpha: 1.0)
     }
     
     required init?(coder aDecoder: NSCoder) {
